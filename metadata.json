@@ -1,0 +1,6 @@
+{
+  "name": "Kéo Co Sinh Học 12 - Mendel vs Morgan",
+  "description": "Trò chơi kéo co đối kháng 2 bên A và B với câu hỏi trắc nghiệm Sinh học lớp 12 giữa kì 1 giữa Gregor Mendel và Thomas Hunt Morgan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
