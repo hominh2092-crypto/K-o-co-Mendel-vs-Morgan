@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti';
 import { MENDEL_QUESTIONS, MORGAN_QUESTIONS, TEAM_A_PROFILE, TEAM_B_PROFILE } from './data/biologyQuestions';
 import { Question, GameMode, AnswerRecord, TimeSettings, Language, MatchType, ScientistChoice, CharacterSkinId } from './types';
 import { sound } from './utils/soundEffects';
+import { safeStorage } from './utils/safeStorage';
 import TugOfWarStage from './components/TugOfWarStage';
 import QuestionBoard from './components/QuestionBoard';
 import GameHeader from './components/GameHeader';
@@ -33,7 +34,7 @@ const DEFAULT_TIME_SETTINGS: TimeSettings = {
 
 function loadStoredTimeSettings(): TimeSettings {
   try {
-    const saved = localStorage.getItem(TIME_SETTINGS_STORAGE_KEY);
+    const saved = safeStorage.getItem(TIME_SETTINGS_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed.sharedSeconds === 'number') {
@@ -48,7 +49,7 @@ function loadStoredTimeSettings(): TimeSettings {
 
 function loadStoredQuestions(key: string, defaultQuestions: Question[]): Question[] {
   try {
-    const saved = localStorage.getItem(key);
+    const saved = safeStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -77,7 +78,7 @@ export default function App() {
   // Character Skin state
   const [selectedSkin, setSelectedSkin] = useState<CharacterSkinId>(() => {
     try {
-      const saved = localStorage.getItem(SKIN_STORAGE_KEY);
+      const saved = safeStorage.getItem(SKIN_STORAGE_KEY);
       if (
         saved &&
         (saved === 'classic' ||
@@ -98,21 +99,17 @@ export default function App() {
 
   const handleSelectSkin = (newSkin: CharacterSkinId) => {
     setSelectedSkin(newSkin);
-    try {
-      localStorage.setItem(SKIN_STORAGE_KEY, newSkin);
-    } catch (e) {
-      console.error('Error saving skin:', e);
-    }
+    safeStorage.setItem(SKIN_STORAGE_KEY, newSkin);
   };
 
   // Language & Audio settings state
   const [language, setLanguage] = useState<Language>(() => {
-    const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    const saved = safeStorage.getItem(LANGUAGE_STORAGE_KEY);
     return saved === 'en' ? 'en' : 'vi';
   });
 
   const [volume, setVolumeState] = useState<number>(() => {
-    const saved = localStorage.getItem(VOLUME_STORAGE_KEY);
+    const saved = safeStorage.getItem(VOLUME_STORAGE_KEY);
     if (saved !== null) {
       const parsed = parseFloat(saved);
       if (!isNaN(parsed)) return parsed;
@@ -121,7 +118,7 @@ export default function App() {
   });
 
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(() => {
-    const saved = localStorage.getItem(SOUND_ENABLED_STORAGE_KEY);
+    const saved = safeStorage.getItem(SOUND_ENABLED_STORAGE_KEY);
     return saved !== 'false';
   });
 
@@ -133,31 +130,19 @@ export default function App() {
 
   const handleLanguageChange = (newLang: Language) => {
     setLanguage(newLang);
-    try {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, newLang);
-    } catch (e) {
-      console.error('Error saving language:', e);
-    }
+    safeStorage.setItem(LANGUAGE_STORAGE_KEY, newLang);
   };
 
   const handleVolumeChange = (newVol: number) => {
     setVolumeState(newVol);
     sound.setVolume(newVol);
-    try {
-      localStorage.setItem(VOLUME_STORAGE_KEY, String(newVol));
-    } catch (e) {
-      console.error('Error saving volume:', e);
-    }
+    safeStorage.setItem(VOLUME_STORAGE_KEY, String(newVol));
   };
 
   const handleToggleSound = () => {
     const newState = sound.toggleSound();
     setIsSoundEnabled(newState);
-    try {
-      localStorage.setItem(SOUND_ENABLED_STORAGE_KEY, String(newState));
-    } catch (e) {
-      console.error('Error saving sound state:', e);
-    }
+    safeStorage.setItem(SOUND_ENABLED_STORAGE_KEY, String(newState));
   };
 
   // Master Question Pools (Loaded from localStorage or defaults)
@@ -226,34 +211,22 @@ export default function App() {
   const handleUpdateQuestions = useCallback((updatedMendel: Question[], updatedMorgan: Question[]) => {
     setMasterMendelQuestions(updatedMendel);
     setMasterMorganQuestions(updatedMorgan);
-    try {
-      localStorage.setItem(MENDEL_STORAGE_KEY, JSON.stringify(updatedMendel));
-      localStorage.setItem(MORGAN_STORAGE_KEY, JSON.stringify(updatedMorgan));
-    } catch (e) {
-      console.error('Error persisting questions to localStorage:', e);
-    }
+    safeStorage.setItem(MENDEL_STORAGE_KEY, JSON.stringify(updatedMendel));
+    safeStorage.setItem(MORGAN_STORAGE_KEY, JSON.stringify(updatedMorgan));
   }, []);
 
   // Handle Reset to Default questions
   const handleResetToDefault = useCallback(() => {
     setMasterMendelQuestions(MENDEL_QUESTIONS);
     setMasterMorganQuestions(MORGAN_QUESTIONS);
-    try {
-      localStorage.removeItem(MENDEL_STORAGE_KEY);
-      localStorage.removeItem(MORGAN_STORAGE_KEY);
-    } catch (e) {
-      console.error('Error clearing questions storage:', e);
-    }
+    safeStorage.removeItem(MENDEL_STORAGE_KEY);
+    safeStorage.removeItem(MORGAN_STORAGE_KEY);
   }, []);
 
   // Save Time Settings Handler
   const handleSaveTimeSettings = useCallback((newSettings: TimeSettings) => {
     setTimeSettings(newSettings);
-    try {
-      localStorage.setItem(TIME_SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
-    } catch (e) {
-      console.error('Error persisting time settings:', e);
-    }
+    safeStorage.setItem(TIME_SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
   }, []);
 
   // Initialize or Reset Game
