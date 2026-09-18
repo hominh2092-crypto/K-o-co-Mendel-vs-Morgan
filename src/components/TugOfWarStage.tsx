@@ -1,11 +1,13 @@
 import { ReactNode } from 'react';
 import { motion } from 'motion/react';
-import { Award, Zap } from 'lucide-react';
+import { Award, Zap, Sparkles } from 'lucide-react';
 import mendelAvatar from '../assets/images/mendel_portrait_1788943551781.jpg';
 import morganAvatar from '../assets/images/morgan_portrait_1788943564933.jpg';
 import MendelCharacter from './MendelCharacter';
 import MorganCharacter from './MorganCharacter';
 import BraidedRope from './BraidedRope';
+import { CharacterSkinId } from '../types';
+import { getSkinDef } from '../data/characterSkins';
 
 interface TugOfWarStageProps {
   pullPosition: number; // e.g. -5 (Mendel wins) to +5 (Morgan wins), 0 is center
@@ -20,6 +22,7 @@ interface TugOfWarStageProps {
   winner: 'A' | 'B' | 'TIE' | null;
   leftBoard: ReactNode;
   rightBoard: ReactNode;
+  skinId?: CharacterSkinId;
 }
 
 export default function TugOfWarStage({
@@ -34,8 +37,10 @@ export default function TugOfWarStage({
   isGameOver,
   winner,
   leftBoard,
-  rightBoard
+  rightBoard,
+  skinId = 'classic'
 }: TugOfWarStageProps) {
+  const skin = getSkinDef(skinId);
   // Convert pullPosition (-maxPull to +maxPull) to percentage offset (-34% to +34%)
   const ropeShiftPercent = Math.max(-34, Math.min(34, (pullPosition / maxPull) * 30));
 
@@ -234,9 +239,10 @@ export default function TugOfWarStage({
               pullPosition={pullPosition}
               isWinner={winner === 'A'}
               isLoser={winner === 'B'}
+              skinId={skinId}
             />
             <div className="text-[10px] font-bold text-emerald-300 mt-1 flex items-center gap-1 bg-slate-900/90 px-2 py-0.5 rounded-full border border-emerald-700/60 shadow">
-              <span>🌱 Mendel</span>
+              <span>{skin.icon} {skin.mendel.titleVi.split(' ')[0]} Mendel</span>
             </div>
           </div>
 
@@ -276,9 +282,10 @@ export default function TugOfWarStage({
               pullPosition={pullPosition}
               isWinner={winner === 'B'}
               isLoser={winner === 'A'}
+              skinId={skinId}
             />
             <div className="text-[10px] font-bold text-amber-300 mt-1 flex items-center gap-1 bg-slate-900/90 px-2 py-0.5 rounded-full border border-amber-700/60 shadow">
-              <span>🪰 Morgan</span>
+              <span>{skin.icon} {skin.morgan.titleVi.split(' ')[0]} Morgan</span>
             </div>
           </div>
 

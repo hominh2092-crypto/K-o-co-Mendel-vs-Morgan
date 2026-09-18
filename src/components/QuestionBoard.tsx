@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, XCircle, AlertCircle, ArrowRight, HelpCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, ArrowRight, HelpCircle, Clock } from 'lucide-react';
 import { Question } from '../types';
 import BraidedRope from './BraidedRope';
 
@@ -20,6 +20,9 @@ interface QuestionBoardProps {
   isBot?: boolean;
   botStatusText?: string;
   keyHints: string[];
+  timeLimit?: number;
+  timeLeft?: number;
+  isTimedOut?: boolean;
   onAnswer: (selectedIndex: number) => void;
 }
 
@@ -39,6 +42,9 @@ export default function QuestionBoard({
   isBot = false,
   botStatusText,
   keyHints,
+  timeLimit = 30,
+  timeLeft,
+  isTimedOut = false,
   onAnswer
 }: QuestionBoardProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -51,6 +57,15 @@ export default function QuestionBoard({
     setShowFeedback(false);
     setIsAnswering(false);
   }, [currentQuestion?.id]);
+
+  // If timed out, show feedback
+  useEffect(() => {
+    if (isTimedOut) {
+      setSelectedOption(-1);
+      setShowFeedback(true);
+      setIsAnswering(true);
+    }
+  }, [isTimedOut]);
 
   const handleSelect = (idx: number) => {
     if (isAnswering || showFeedback || !currentQuestion || isCompleted || !isActiveTurn) return;
@@ -116,7 +131,31 @@ export default function QuestionBoard({
         </div>
 
         {/* Question progress and scores */}
-        <div className="flex items-center gap-1 text-xs font-mono">
+        <div className="flex items-center gap-1.5 text-xs font-mono">
+          {/* Timer Badge */}
+          {timeLimit > 0 ? (
+            <div 
+              className={`px-2 py-0.5 rounded-md flex items-center gap-1 font-mono text-[11px] font-bold border transition-all ${
+                timeLeft !== undefined && timeLeft <= 5
+                  ? 'bg-rose-950/90 text-rose-300 border-rose-500 shadow-sm shadow-rose-900/50 animate-pulse ring-1 ring-rose-400'
+                  : timeLeft !== undefined && timeLeft <= 10
+                  ? 'bg-amber-950/90 text-amber-300 border-amber-500/70'
+                  : isEmerald
+                  ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600/70'
+                  : 'bg-amber-950/90 text-amber-300 border-amber-600/70'
+              }`}
+              title={`Thời gian còn lại: ${timeLeft ?? timeLimit}s`}
+            >
+              <Clock className={`w-3 h-3 ${timeLeft !== undefined && timeLeft <= 5 ? 'text-rose-400 animate-spin' : 'text-slate-400'}`} />
+              <span>{timeLeft ?? timeLimit}s</span>
+            </div>
+          ) : (
+            <div className="px-1.5 py-0.5 rounded-md flex items-center gap-1 font-mono text-[10px] text-slate-400 bg-slate-900/80 border border-slate-700/60" title="Không giới hạn thời gian">
+              <Clock className="w-2.5 h-2.5 text-slate-500" />
+              <span>∞</span>
+            </div>
+          )}
+
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isEmerald ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}`}>
             {questionNumber}/{totalQuestions}
           </span>
@@ -130,6 +169,26 @@ export default function QuestionBoard({
           </div>
         </div>
       </div>
+
+      {/* Dynamic Countdown Progress Bar */}
+      {timeLimit > 0 && !isCompleted && (
+        <div className="w-full bg-slate-900/90 h-1.5 relative overflow-hidden border-b border-slate-800/80">
+          <div 
+            className={`h-full transition-all duration-1000 ease-linear ${
+              timeLeft !== undefined && timeLeft <= 5
+                ? 'bg-rose-500 shadow-xs shadow-rose-500 animate-pulse'
+                : timeLeft !== undefined && timeLeft <= 10
+                ? 'bg-amber-400'
+                : isEmerald
+                ? 'bg-emerald-400'
+                : 'bg-amber-400'
+            }`}
+            style={{
+              width: `${Math.max(0, Math.min(100, ((timeLeft ?? timeLimit) / timeLimit) * 100))}%`
+            }}
+          />
+        </div>
+      )}
 
       {/* Turn alert banner if turn-based */}
       {!isActiveTurn && !isCompleted && (
@@ -250,13 +309,29 @@ export default function QuestionBoard({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={`p-1.5 sm:p-2 rounded-xl border text-[10.5px] backdrop-blur-xs ${
-                    selectedOption === currentQuestion.correctIndex
+                    isTimedOut
+                      ? 'bg-rose-950/90 border-rose-500/80 text-rose-200 ring-1 ring-rose-400'
+                      : selectedOption === currentQuestion.correctIndex
                       ? 'bg-emerald-950/90 border-emerald-500/80 text-emerald-200'
                       : 'bg-rose-950/90 border-rose-500/80 text-rose-200'
                   }`}
                 >
                   <div className="flex items-start gap-1.5">
-                    {selectedOption === currentQuestion.correctIndex ? (
+                    {isTimedOut ? (
+                      <>
+                        <Clock className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5 animate-bounce" />
+                        <div>
+                          <p className="font-bold text-rose-300">
+                            ⏰ Hết thời gian suy nghĩ! Bỏ qua câu hỏi này (Dây giữ nguyên).
+                          </p>
+                          <p className="text-[9.5px] text-rose-300/80 mt-0.2 line-clamp-2">
+                            Đáp án đúng: <span className="font-semibold text-white">
+                              {['A', 'B', 'C', 'D'][currentQuestion.correctIndex]}. {currentQuestion.options[currentQuestion.correctIndex]}
+                            </span>
+                          </p>
+                        </div>
+                      </>
+                    ) : selectedOption === currentQuestion.correctIndex ? (
                       <>
                         <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
                         <div>

@@ -5,11 +5,29 @@ export interface Question {
   options: [string, string, string, string];
   correctIndex: number; // 0 for A, 1 for B, 2 for C, 3 for D
   explanation: string;
+  team?: 'A' | 'B';
 }
 
 export type TeamId = 'A' | 'B';
 
 export type GameMode = 'simultaneous' | 'turn-based' | 'vs-bot';
+
+export type MatchType = 'vs-bot' | 'pvp';
+
+export type ScientistChoice = 'A' | 'B'; // 'A' = Gregor Mendel, 'B' = Thomas Hunt Morgan
+
+export type Language = 'vi' | 'en';
+
+export type CharacterSkinId =
+  | 'classic'
+  | 'christmas'
+  | 'tet'
+  | 'halloween'
+  | 'teacher'
+  | 'cyber'
+  | 'summer';
+
+export type AppView = 'lobby' | 'arena' | 'manage';
 
 export type BotDifficulty = 'easy' | 'medium' | 'hard';
 
@@ -18,6 +36,15 @@ export interface AnswerRecord {
   question: Question;
   selectedOption: number;
   isCorrect: boolean;
+  isTimeout?: boolean;
+}
+
+export interface TimeSettings {
+  mode: 'shared' | 'individual'; // 'shared' = equal for both, 'individual' = per-team
+  sharedSeconds: number; // 0 = unlimited, 15, 20, 30, 45, 60
+  teamASeconds: number; // seconds for Mendel
+  teamBSeconds: number; // seconds for Morgan
+  tickSoundEnabled: boolean;
 }
 
 export interface TeamProfile {

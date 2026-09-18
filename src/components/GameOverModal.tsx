@@ -238,9 +238,11 @@ export default function GameOverModal({
                         <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
                           item.isCorrect 
                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
+                            : item.isTimeout
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                             : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                         }`}>
-                          {item.isCorrect ? '✓ Đúng (+1 Dây)' : '✕ Sai (Bỏ qua)'}
+                          {item.isCorrect ? '✓ Đúng (+1 Dây)' : item.isTimeout ? '⏱️ Hết giờ (Bỏ qua)' : '✕ Sai (Bỏ qua)'}
                         </span>
                       </div>
                       <p className="text-slate-200 mb-2 font-medium">{q.question}</p>
@@ -249,11 +251,15 @@ export default function GameOverModal({
                         <div className="text-emerald-400 font-semibold">
                           Đáp án đúng: {['A', 'B', 'C', 'D'][q.correctIndex]}. {q.options[q.correctIndex]}
                         </div>
-                        {!item.isCorrect && item.selectedOption >= 0 && (
+                        {item.isTimeout ? (
+                          <div className="text-amber-400 text-[11px] font-medium">
+                            ⏱️ Đã hết thời gian suy nghĩ cho câu này.
+                          </div>
+                        ) : !item.isCorrect && item.selectedOption >= 0 ? (
                           <div className="text-rose-400">
                             Bạn đã chọn: {['A', 'B', 'C', 'D'][item.selectedOption]}. {q.options[item.selectedOption]}
                           </div>
-                        )}
+                        ) : null}
                         <div className="text-slate-400 text-[11px] pt-1 border-t border-slate-800 mt-1 italic">
                           💡 Giải thích: {q.explanation}
                         </div>
