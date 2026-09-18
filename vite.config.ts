@@ -65,8 +65,25 @@ function aistudioMediaPlugin(): Plugin {
 // LINT.ThenChange(//depot/google3/java/com/google/alkali/boq/makersuite/applet_dev_service/templates/initializers/react_theme/vite.config.ts:aistudio_media_plugin)
 
 export default defineConfig(() => {
+  const getBasePath = () => {
+    // 1. Base path passed from GitHub Actions configure-pages step
+    if (process.env.VITE_BASE_PATH) {
+      const p = process.env.VITE_BASE_PATH;
+      return p.endsWith('/') ? p : `${p}/`;
+    }
+    // 2. Base path inferred from GitHub Actions environment GITHUB_REPOSITORY (e.g. "user/repo")
+    if (process.env.GITHUB_REPOSITORY) {
+      const parts = process.env.GITHUB_REPOSITORY.split('/');
+      if (parts.length > 1 && parts[1]) {
+        return `/${parts[1]}/`;
+      }
+    }
+    // 3. Fallback to relative path for AI Studio container, preview, and local
+    return './';
+  };
+
   return {
-    base: './',
+    base: getBasePath(),
     plugins: [react(), tailwindcss(), aistudioMediaPlugin()],
     resolve: {
       alias: {

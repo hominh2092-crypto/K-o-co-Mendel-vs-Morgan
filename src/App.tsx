@@ -708,7 +708,7 @@ export default function App() {
       }
 
       // If user is playing as Morgan against Bot Mendel, also allow 1,2,3,4 / a,s,d,f for convenience
-      if (isBotA && !isMorganBusy && (gameMode !== 'turn-based' || currentTurn === 'B')) {
+      if (isBotA && !isMorganBusy) {
         if (key === '1' || key === 'a') handleMorganAnswer(0);
         else if (key === '2' || key === 's') handleMorganAnswer(1);
         else if (key === '3' || key === 'd') handleMorganAnswer(2);
